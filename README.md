@@ -1,0 +1,2 @@
+# JdesHZ
+PHP SQL Class
