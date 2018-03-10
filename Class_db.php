@@ -1,6 +1,6 @@
 <?php 
 	/*
-	 *	author:马其洋
+	 *	author:JdesHZ
 	 *	version:1.2.0
 	 * 	date:2018-03-08
 	 * 	如有bug,请联系
