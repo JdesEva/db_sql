@@ -1,8 +1,8 @@
 <?php 
 	/*
-	 *	author:JdesHZ
+	 *	author:马其洋
 	 *	version:1.2.2
-	 * 	date:2018-03-11
+	 * 	date:2018-03-08
 	 * 	如有bug,请联系
 	 */
 	
@@ -136,7 +136,7 @@
 		 *	表示查询a,b字段,并且在$key=$value的条件下;
 		 * 	默认根据ID 降序排列
 		 */
-		public static function SELECT($link,$table,$keywords,$condition=null,$limit=NULL,$by=ID,$order=DESC){
+		public static function SELECT($link,$table,$keywords,$condition=NULL,$limit=NULL,$by=ID,$order=DESC){
 			if($condition!=null){
 				$arr=[];
 				foreach ($condition as $key => $value) {
@@ -145,7 +145,6 @@
 					array_push($arr,$str);
 				}
 				$str1=implode(' AND ',$arr);
-				$keywords=$keywords;
 				if($limit==null){
 					$sql = "SELECT $keywords FROM $table WHERE $str1 ORDER BY $by $order";
 				}else{
@@ -164,8 +163,12 @@
 			}else{
 				$str_arr=DataBase::HandleTime($keywords);
 			}
-			$result = mysqli_query($link,$sql);
-			$res_t=mysqli_num_rows($result);
+			$result=mysqli_query($link,$sql);
+			if(!$result){
+				die(mysql_error());
+			}else{
+				$res_t=mysqli_num_rows($result);
+			}
 			if($res_t>0){
 				while($row=mysqli_fetch_assoc($result)){
 					if(DataBase::isname($link,$table,'time')&&(stristr($keywords,'time')||$keywords=='*')){
@@ -319,7 +322,7 @@
 			$arr1=[];
 			foreach ($condition as $key => $value) {
 				$value=DataBase::Tostr($value);
-				$str=$key.'='.$value;
+				$str=$key.'="'.$value.'"';
 				array_push($arr1,$str);
 			}
 			$arr2=[];
