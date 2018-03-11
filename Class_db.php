@@ -1,8 +1,8 @@
 <?php 
 	/*
 	 *	author:JdesHZ
-	 *	version:1.2.0
-	 * 	date:2018-03-08
+	 *	version:1.2.2
+	 * 	date:2018-03-11
 	 * 	如有bug,请联系
 	 */
 	
@@ -136,7 +136,7 @@
 		 *	表示查询a,b字段,并且在$key=$value的条件下;
 		 * 	默认根据ID 降序排列
 		 */
-		public static function SELECT($link,$table,$keywords,$limit=NULL,$condition=null,$by=ID,$order=DESC){
+		public static function SELECT($link,$table,$keywords,$condition=null,$limit=NULL,$by=ID,$order=DESC){
 			if($condition!=null){
 				$arr=[];
 				foreach ($condition as $key => $value) {
@@ -179,7 +179,9 @@
 				}
 				$data=json_encode($list);
 				return $data;
-			} 
+			}else{
+				return "no-exist";
+			}
 		}
 
 		/*
@@ -405,7 +407,7 @@
 		 * 	$userinfo:提交到数据库的密码(用户名)所在字段,以及创建的密码(用户名)(可事先加密),数据格式为数组;
 		 * 	$userinfo=[
 		 * 		psd=>e6667ca4dfe6f680531f76d12d1bbcdd,
-		 * 		username=>YUTE89,
+		 * 		user=>YUTE89,
 		 * 	];
 		 * 	提交数据字段如需更改请自行更换,建议保留默认值
 		 * 	默认不创建用户密码数据创建时间,如需添加,请输入储存字段$timename;
@@ -434,7 +436,7 @@
 		 */
 		
 		public static function verify($link,$table,$userinfo,$mode=sha1){
-			$salt= DataBase::SELECT($link,$table,'salt','',[username=>$userinfo['username']]);
+			$salt= DataBase::SELECT($link,$table,'salt',[user=>$userinfo['user']]);
 			$arr=json_decode($salt,TRUE);
 			foreach ($arr as $key => $value) {
 				$salt=$value['salt'];
@@ -444,7 +446,7 @@
 			}else{
 				$psd=sha1(sha1($userinfo['psd']).sha1($salt));
 			}
-			$password=DataBase::SELECT($link,$table,'psd','',[username=>$userinfo['username']]);
+			$password=DataBase::SELECT($link,$table,'psd',[user=>$userinfo['user']]);
 			$arr1=json_decode($password,true);
 			foreach ($arr1 as $key => $value) {
 				if($psd===$value['psd']){//防止hash漏洞
@@ -483,9 +485,9 @@
 			$str='id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'.implode(' NOT NULL,',$arr);
 			$sql="CREATE TABLE {$tablename} ($str)";
 			if ($conn->query($sql) === TRUE) {
-			echo "create-success";
+			return "create-success";
 			} else {
-			echo "创建数据表错误: " . $conn->error;
+			return "创建数据表错误: " . $conn->error;
 			}
 			$conn->close();
 		}
@@ -517,6 +519,7 @@
 			$str=str_replace('(','%mlt',$str);//处理(
 			$str=str_replace(')','%nlt',$str);//处理)
 			$str=str_replace('!','%olt',$str);//处理!
+			$str=str_replace('+','%2b',$str);//处理+
 			return $str;
 		}
 
