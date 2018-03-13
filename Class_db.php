@@ -1,8 +1,8 @@
 <?php 
 	/*
 	 *	author:JdesHZ
-	 *	version:1.2.2
-	 * 	date:2018-03-08
+	 *	version:1.3.0
+	 * 	date:2018-03-12
 	 * 	如有bug,请联系
 	 */
 	
@@ -529,6 +529,35 @@
 
 		/*
 		 *	待添加功能 2018-03-10 10:23
+		 */
+		
+
+		/*
+		 *	base64解码类
+		 *	用于取出数据后解码(前台解码繁琐),主要用于一些次要加密信息
+		 *	$str:需要解码的字符串,通常是SELECT出来的json数组字符串
+		 *	$columns:需要解码的字段名称,例如
+		 *	$columns="a,b";
+		 *	
+		 */
+		
+		public static function Base64_de($str,$columns){
+			$arr=json_decode($str,true);
+			foreach ($arr as $key => $value) {
+				foreach ($value as $k => $val) {
+					if(strpos($columns,$k)||strpos($columns,$k)===0){
+						$value[$k]=base64_decode($val);
+					}
+				}
+				$arr[$key]=$value;
+			}
+			$data=json_encode($arr,true);
+			return $data;
+		}
+
+
+		/*
+		 *	待添加功能 2018-03-12 19:52
 		 */
 
 	}
