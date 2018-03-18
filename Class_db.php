@@ -1,8 +1,8 @@
 <?php 
 	/*
 	 *	author:JdesHZ
-	 *	version:1.3.0
-	 * 	date:2018-03-12
+	 *	version:1.3.1
+	 * 	date:2018-03-16
 	 * 	如有bug,请联系
 	 */
 	
@@ -135,8 +135,11 @@
 		 *	$value:值
 		 *	表示查询a,b字段,并且在$key=$value的条件下;
 		 * 	默认根据ID 降序排列
+		 *  $between=[a,45,60];
+		 *  表示查询a字段 在45-60范围内的数据
+		 * 
 		 */
-		public static function SELECT($link,$table,$keywords,$condition=NULL,$limit=NULL,$by=ID,$order=DESC){
+		public static function SELECT($link,$table,$keywords,$condition=NULL,$limit=NULL,$by=ID,$between=NULL,$order=DESC){
 			if($condition!=null){
 				$arr=[];
 				foreach ($condition as $key => $value) {
@@ -144,19 +147,34 @@
 					$str=$key.' ="'.$value.'"';
 					array_push($arr,$str);
 				}
-				$str1=implode(' AND ',$arr);
+				if($between!=NULL){
+					$str1=implode(' AND ',$arr).' AND '.$between[0].' BETWEEN "'.$between[1].'" AND "'.$between[2].'"';
+				}else{
+					$str1=implode(' AND ',$arr);
+				}
 				if($limit==null){
 					$sql = "SELECT $keywords FROM $table WHERE $str1 ORDER BY $by $order";
 				}else{
 					$sql = "SELECT $keywords FROM $table WHERE $str1 ORDER BY $by $order LIMIT $limit";
 				}
 			}else{
-				if($limit==null){
-				$sql = "SELECT $keywords FROM $table ORDER BY $by $order";
+				if($between!=NULL){
+					$a=$between[0];
+					$min='"'.$between[1].'"';
+					$max='"'.$between[2].'"';
+					if($limit==null){
+					$sql = "SELECT $keywords FROM $table WHERE $a BETWEEN $min AND $max ORDER BY $by $order";
+					}else{
+						$sql = "SELECT $keywords FROM $table WHERE $a BETWEEN $min AND $max ORDER BY $by $order LIMIT $limit";
+					}
 				}else{
-					$sql = "SELECT $keywords FROM $table ORDER BY $by $order LIMIT $limit";
+					if($limit==null){
+					$sql = "SELECT $keywords FROM $table ORDER BY $by $order";
+					}else{
+						$sql = "SELECT $keywords FROM $table ORDER BY $by $order LIMIT $limit";
+					}
 				}
-			}	
+			}
 			if($keywords=='*'){
 				$keywords=DataBase::getName($link,$table);
 				$str_arr=DataBase::HandleTime($keywords);
@@ -186,6 +204,7 @@
 				return "no-exist";
 			}
 		}
+
 
 		/*
 		 *	查询符合某一字段的数据条数,返回json;
@@ -230,7 +249,7 @@
 		 * 	默认顺序查询,如需倒叙查询,请自行赋值$order=DESC;
 		 */
 
-		public static function getpage($link,$page,$page_num,$table,$keywords='*',$by=ID,$order=ASC){
+		public static function getpage($link,$table,$page,$page_num,$keywords='*',$by=ID,$order=ASC){
 			$t_page=$page-1;
 			$tp_page=$t_page*$page_num;
 			$sql="SELECT $keywords FROM $table ORDER BY $by $order LIMIT {$tp_page},{$page_num}";
@@ -461,6 +480,39 @@
 		}
 
 		/*
+		 * 修改密码类
+		 * 如果设置密码用了此文件的设置密码类
+		 * 那么修改密码必须也要用此类函数
+		 * 且前后模式应该一致，推荐默认(sha1)
+		 * $userinfo:用户信息,数组形式传入(一般传入的是用户名)
+		 * $userinfo=[
+		 * 		user=>xxxx
+		 * ];
+		 * user:数据表字段
+		 * xxx:值
+		 * 用于查找信息
+		 * $newpsd=[
+		 * 		psd=>dasgdjkashdjkagdasgd
+		 * ];
+		 * psd:代表数据库储存密码的字段名
+		 */
+
+		public static function resetPsd($link,$table,$userinfo,$newpsd,$mode=sha1){
+			$psd_salt=DataBase::SELECT($link,$table,'salt',$userinfo);
+			$psd_salt=json_decode($psd_salt,true);
+			foreach ($psd_salt as $key => $value) {
+				$salt= $value['salt'];
+			}
+			if ($mode=='md5') {
+				$con_newpsd=md5(md5($newpsd['psd']).md5($salt));
+			}else{
+				$con_newpsd=sha1(sha1($newpsd['psd']).sha1($salt));
+			}
+			$newpsd['psd']=$con_newpsd;
+			return DataBase::UPDATE($link,$table,$newpsd,$userinfo);
+		}
+
+		/*
 		 *	创建数据表
 		 *	$password:数据库密码;
 		 *	$dbname:创建数据表的数据库名称;
@@ -508,7 +560,6 @@
 
 		public static function Tostr($str){
 			$str=str_replace(';','%alt',$str);//处理;
-			$str=str_replace('-','%blt',$str);//处理-
 			$str=str_replace('@','%clt',$str);//处理@
 			$str=str_replace('|','%dlt',$str);//处理|
 			$str=str_replace('#','%elt',$str);//处理#
@@ -557,8 +608,12 @@
 
 
 		/*
-		 *	待添加功能 2018-03-12 19:52
+		 *	待添加功能 2018-03-16 20:58
 		 */
+		
+
+
+		
 
 	}
 	
