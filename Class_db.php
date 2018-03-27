@@ -1,8 +1,8 @@
 <?php 
 	/*
 	 *	author:JdesHZ
-	 *	version:1.3.1
-	 * 	date:2018-03-16
+	 *	version:1.3.2
+	 * 	date:2018-03-27
 	 * 	如有bug,请联系
 	 */
 	
@@ -134,9 +134,11 @@
 		 *	$key:某一字段名
 		 *	$value:值
 		 *	表示查询a,b字段,并且在$key=$value的条件下;
-		 * 	默认根据ID 降序排列
+		 * 	默认根据ID 降序排列;
 		 *  $between=[a,45,60];
-		 *  表示查询a字段 在45-60范围内的数据
+		 *  表示查询a字段 在45-60范围内的数据;
+		 *
+		 * 	@pram:目前仅支持单字段between查询,多字段待添加
 		 * 
 		 */
 		public static function SELECT($link,$table,$keywords,$condition=NULL,$limit=NULL,$by=ID,$between=NULL,$order=DESC){
@@ -574,6 +576,7 @@
 			$str=str_replace(')','%nlt',$str);//处理)
 			$str=str_replace('!','%olt',$str);//处理!
 			$str=str_replace('+','%2b',$str);//处理+
+			$str=str_replace('--','%ddlt',$str);//处理--
 			return $str;
 		}
 
