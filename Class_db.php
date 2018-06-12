@@ -45,7 +45,7 @@
 		 */
 
 		public static function dblink($password,$dbname,$servername=localhost,$username=root,$port=3306){
-			@$link =new mysqli($servername,$username,$password,$dbname,$port);
+			@$link = new mysqli($servername,$username,$password,$dbname,$port);
 			//测试连接
 			if($link->connect_error){
 				die("connect_error".$link->connect_error);
@@ -60,12 +60,12 @@
 		 */
 		
 		public static function isname($link,$table,$keyname){
-			$sql="SELECT column_name FROM information_schema.columns WHERE TABLE_NAME='$table'";
-			$result=mysqli_query($link,$sql);
-			$res_t=mysqli_num_rows($result);
-			if($res_t>0){
-				while($row=mysqli_fetch_assoc($result)){
-					$list[]=$row;
+			$sql = "SELECT column_name FROM information_schema.columns WHERE TABLE_NAME='$table'";
+			$resul = mysqli_query($link,$sql);
+			$res_t = mysqli_num_rows($result);
+			if($res_t > 0){
+				while($row = mysqli_fetch_assoc($result)){
+					$list[] = $row;
 				}
 				foreach ($list as $key => $value) {
 					foreach ($value as $key => $val) {
@@ -85,19 +85,19 @@
 
 		public static function getName($link,$table){
 			$sql="SELECT column_name FROM information_schema.columns WHERE TABLE_NAME='$table'";
-			$result=mysqli_query($link,$sql);
-			$res_t=mysqli_num_rows($result);
-			$arr=[];
+			$result = mysqli_query($link,$sql);
+			$res_t = mysqli_num_rows($result);
+			$arr = [];
 			if($res_t>0){
-				while($row=mysqli_fetch_assoc($result)){
-					$list[]=$row;
+				while($row = mysqli_fetch_assoc($result)){
+					$list[] = $row;
 				}
 				foreach ($list as $key => $value) {
 					foreach ($value as $key => $val) {
 						array_push($arr,$val);
 					}
 				}
-				$str=implode(',',$arr);
+				$str = implode(',',$arr);
 				return $str;
 			}
 		}
@@ -109,8 +109,8 @@
 			
 		public static function HandleTime($keywords){
 			if(stristr($keywords,'time')){
-				$arr=explode(',',$keywords);
-				$str_arr=[];
+				$arr = explode(',',$keywords);
+				$str_arr = [];
 				if(stristr($keywords,'time')){
 					foreach ($arr as $key => $value) {
 						if(stristr($value,'time')){
@@ -137,70 +137,69 @@
 		 * 	默认根据ID 降序排列;
 		 *  $between=[a,45,60];
 		 *  表示查询a字段 在45-60范围内的数据;
-		 *
 		 * 	@pram:目前仅支持单字段between查询,多字段待添加
 		 * 
 		 */
 		public static function SELECT($link,$table,$keywords,$condition=NULL,$limit=NULL,$by=ID,$between=NULL,$order=DESC){
-			if($condition!=null){
-				$arr=[];
+			if($condition != null){
+				$arr = [];
 				foreach ($condition as $key => $value) {
-					$value=DataBase::Tostr($value);
-					$str=$key.' ="'.$value.'"';
+					$value = DataBase::Tostr($value);
+					$str = $key.' ="'.$value.'"';
 					array_push($arr,$str);
 				}
-				if($between!=NULL){
-					$str1=implode(' AND ',$arr).' AND '.$between[0].' BETWEEN "'.$between[1].'" AND "'.$between[2].'"';
+				if($between != NULL){
+					$str1 = implode(' AND ',$arr).' AND '.$between[0].' BETWEEN "'.$between[1].'" AND "'.$between[2].'"';
 				}else{
-					$str1=implode(' AND ',$arr);
+					$str1 = implode(' AND ',$arr);
 				}
-				if($limit==null){
+				if($limit == null){
 					$sql = "SELECT $keywords FROM $table WHERE $str1 ORDER BY $by $order";
 				}else{
 					$sql = "SELECT $keywords FROM $table WHERE $str1 ORDER BY $by $order LIMIT $limit";
 				}
 			}else{
-				if($between!=NULL){
-					$a=$between[0];
-					$min='"'.$between[1].'"';
-					$max='"'.$between[2].'"';
-					if($limit==null){
+				if($between != NULL){
+					$a = $between[0];
+					$min = '"'.$between[1].'"';
+					$max = '"'.$between[2].'"';
+					if($limit == null){
 					$sql = "SELECT $keywords FROM $table WHERE $a BETWEEN $min AND $max ORDER BY $by $order";
 					}else{
 						$sql = "SELECT $keywords FROM $table WHERE $a BETWEEN $min AND $max ORDER BY $by $order LIMIT $limit";
 					}
 				}else{
-					if($limit==null){
+					if($limit == null){
 					$sql = "SELECT $keywords FROM $table ORDER BY $by $order";
 					}else{
 						$sql = "SELECT $keywords FROM $table ORDER BY $by $order LIMIT $limit";
 					}
 				}
 			}
-			if($keywords=='*'){
-				$keywords=DataBase::getName($link,$table);
-				$str_arr=DataBase::HandleTime($keywords);
+			if($keywords == '*'){
+				$keywords = DataBase::getName($link,$table);
+				$str_arr = DataBase::HandleTime($keywords);
 			}else{
-				$str_arr=DataBase::HandleTime($keywords);
+				$str_arr = DataBase::HandleTime($keywords);
 			}
-			$result=mysqli_query($link,$sql);
+			$result = mysqli_query($link,$sql);
 			if(!$result){
 				die(mysql_error());
 			}else{
-				$res_t=mysqli_num_rows($result);
+				$res_t = mysqli_num_rows($result);
 			}
 			if($res_t>0){
-				while($row=mysqli_fetch_assoc($result)){
-					if(DataBase::isname($link,$table,'time')&&(stristr($keywords,'time')||$keywords=='*')){
+				while($row = mysqli_fetch_assoc($result)){
+					if(DataBase::isname($link,$table,'time') && (stristr($keywords,'time') || $keywords == '*')){
 						foreach ($str_arr as $key => $value) {
-							$row[$value]=date('Y-m-d H:i:s',$row[$value]);
+							$row[$value] = date('Y-m-d H:i:s',$row[$value]);
 						}
 						$list[] = $row;
 					}else{
 						$list[] = $row;
 					}
 				}
-				$data=json_encode($list);
+				$data = json_encode($list);
 				return $data;
 			}else{
 				return "no-exist";
@@ -220,22 +219,22 @@
 		 */
 
 		public static function COUNT($link,$table,$condition=null,$default=count,$column_name='*'){
-			if($condition==null)
+			if($condition == null)
 			{
-				$sql="SELECT COUNT($column_name) AS count FROM $table";
+				$sql = "SELECT COUNT($column_name) AS count FROM $table";
 			}else{
-				$arr=[];
+				$arr = [];
 				foreach ($condition as $key => $value) {
-					$value=DataBase::Tostr($value);
-					$str=$key.'='.$value;
+					$value = DataBase::Tostr($value);
+					$str = $key.'='.$value;
 					array_push($arr,$str);
 				}
-				$str=implode(' AND ',$arr);
-				$sql="SELECT COUNT($column_name) AS count FROM $table WHERE $str";
+				$str = implode(' AND ',$arr);
+				$sql = "SELECT COUNT($column_name) AS count FROM $table WHERE $str";
 			}
 			$result = mysqli_query($link,$sql);
-			$res_t=mysqli_num_rows($result);
-			if($res_t>0){
+			$res_t = mysqli_num_rows($result);
+			if($res_t > 0){
 				while ($row=mysqli_fetch_assoc($result)) {
 					$list[] = $row;
 				}
@@ -252,22 +251,22 @@
 		 */
 
 		public static function getpage($link,$table,$page,$page_num,$keywords='*',$by=ID,$order=ASC){
-			$t_page=$page-1;
-			$tp_page=$t_page*$page_num;
-			$sql="SELECT $keywords FROM $table ORDER BY $by $order LIMIT {$tp_page},{$page_num}";
-			if($keywords=='*'){
-				$keywords=DataBase::getName($link,$table);
-				$str_arr=DataBase::HandleTime($keywords);
+			$t_page = $page - 1;
+			$tp_page = $t_page * $page_num;
+			$sql = "SELECT $keywords FROM $table ORDER BY $by $order LIMIT {$tp_page},{$page_num}";
+			if($keywords == '*'){
+				$keywords = DataBase::getName($link,$table);
+				$str_arr = DataBase::HandleTime($keywords);
 			}else{
-				$str_arr=DataBase::HandleTime($keywords);
+				$str_arr = DataBase::HandleTime($keywords);
 			}
-			$result=mysqli_query($link,$sql);
-			$res_c=mysqli_num_rows($result);
-			if($res_c>0){
-				while ($row=mysqli_fetch_assoc($result)) {
-					if(DataBase::isname($link,$table,'time')&&(stristr($keywords,'time')||$keywords=='*')){
+			$result = mysqli_query($link,$sql);
+			$res_c = mysqli_num_rows($result);
+			if($res_c > 0){
+				while ($row = mysqli_fetch_assoc($result)) {
+					if(DataBase::isname($link,$table,'time') && (stristr($keywords,'time') || $keywords == '*')){
 						foreach ($str_arr as $key => $value) {
-							$row[$value]=date('Y-m-d H:i:s',$row[$value]);
+							$row[$value] = date('Y-m-d H:i:s',$row[$value]);
 						}
 						$list[] = $row;
 					}else{
@@ -284,7 +283,6 @@
 		 *	$arr格式(数组): $arr=[
 		 *		'key'=>'value',
 		 *	];
-		 *	@ 另一种数组定义方式也可以,保证输入为数组即可
 		 *	key:代表数据表字段名;
 		 *	value:序列化表单提交数据键值;
 		 * 	如需提交时间(例如创建时间),请直接输入提交时间的字段名称
@@ -293,28 +291,28 @@
 		 *
 		 */
 		public static function INSERT($link,$table,$arr=null,$timename=null){
-			$arr1=[];
-			$arr2=[];
+			$arr1 = [];
+			$arr2 = [];
 			foreach ($arr as $key => $value) {
 				array_push($arr1,$key);
 				array_push($arr2,$value);
 			}
-			if($timename!=null){
-				$timearr=explode(',',$timename);
-				$count=count($timearr);
-				$str=implode(',',$timearr);
-				$timearr=[];
+			if($timename != null){
+				$timearr = explode(',',$timename);
+				$count = count($timearr);
+				$str = implode(',',$timearr);
+				$timearr = [];
 				for($i=0;$i<$count;$i++){
 					array_push($timearr,time());
 				}
-				$str1='ID,'.$str.','.implode(',', $arr1);
-				$str2='0,'.implode(',',$timearr).',"'.implode('","', $arr2).'"';
+				$str1 = 'ID,'.$str.','.implode(',', $arr1);
+				$str2 = '0,'.implode(',',$timearr).',"'.implode('","', $arr2).'"';
 			}else{
-				$str1='ID,'.implode(',', $arr1);
-				$str2='0,"'.implode('","', $arr2).'"';
+				$str1 = 'ID,'.implode(',', $arr1);
+				$str2 = '0,"'.implode('","', $arr2).'"';
 			}
-			$sql="INSERT INTO $table ($str1) VALUE($str2)";
-			$result=mysqli_query($link,$sql);
+			$sql = "INSERT INTO $table ($str1) VALUE($str2)";
+			$result = mysqli_query($link,$sql);
 			if($result){
 				return 'success';
 			}else{
@@ -340,36 +338,36 @@
 		 */
 
 		public static function UPDATE($link,$table,$keyname=null,$condition=null,$time=null){
-			$arr1=[];
+			$arr1 = [];
 			foreach ($condition as $key => $value) {
-				$value=DataBase::Tostr($value);
-				$str=$key.'="'.$value.'"';
+				$value = DataBase::Tostr($value);
+				$str = $key.'="'.$value.'"';
 				array_push($arr1,$str);
 			}
-			$arr2=[];
+			$arr2 = [];
 			foreach ($keyname as $key => $value) {
-				$str=$key.'="'.$value.'"';
+				$str = $key.'="'.$value.'"';
 				array_push($arr2,$str);
 			}
-			if($time==null){
-				$str1=implode(',',$arr2);
+			if($time == null){
+				$str1 = implode(',',$arr2);
 			}else{
-				$arr=explode(',',$time);
-				$arr_t=[];
+				$arr = explode(',',$time);
+				$arr_t = [];
 				for($i=0;$i<count($arr);$i++){
 					array_push($arr_t,time());
 				}
-				$arrTime=array_combine($arr,$arr_t);
-				$arr3=[];
+				$arrTime = array_combine($arr,$arr_t);
+				$arr3 = [];
 				foreach ($arrTime as $key => $value) {
-				$str=$key.'='.$value;
+				$str = $key.'='.$value;
 				array_push($arr3,$str);
 				}
-				$str1=implode(',',$arr2).','.implode(',',$arr3);
+				$str1 = implode(',',$arr2).','.implode(',',$arr3);
 			}
-			$str2=implode(' AND ',$arr1);
-			$sql="UPDATE $table SET $str1 WHERE $str2";
-			$result=mysqli_query($link,$sql);
+			$str2 = implode(' AND ',$arr1);
+			$sql = "UPDATE $table SET $str1 WHERE $str2";
+			$result = mysqli_query($link,$sql);
 			if($result){
 				return 'success';
 			}else{
@@ -387,15 +385,15 @@
 		 */
 
 		public static function DELETE($link,$table,$condition=null){
-			$arr=[];
+			$arr = [];
 			foreach ($condition as $key => $value) {
-				$value=DataBase::Tostr($value);
-				$str=$key.'='.$value;
+				$value = DataBase::Tostr($value);
+				$str = $key.'='.$value;
 				array_push($arr,$str);
 			}
-			$str=implode(' AND ',$arr);
-			$sql="DELETE FROM $table WHERE $str";
-			$result=mysqli_query($link,$sql);
+			$str = implode(' AND ',$arr);
+			$sql = "DELETE FROM $table WHERE $str";
+			$result = mysqli_query($link,$sql);
 			if($result){
 				return 'success';
 			}else{
@@ -439,12 +437,12 @@
 		 */
 		
 		public static function CreatePsd($link,$table,$userinfo,$timename=null,$mode=sha1){
-			$salt=DataBase::Ranchars();
-			$userinfo['salt']=$salt;
-				if($mode=='md5'){
-					$userinfo['psd']=md5(md5($userinfo['psd']).md5($salt));
+			$salt = DataBase::Ranchars();
+			$userinfo['salt'] = $salt;
+				if($mode == 'md5'){
+					$userinfo['psd'] = md5(md5($userinfo['psd']).md5($salt));
 				}else{
-					$userinfo['psd']=sha1(sha1($userinfo['psd']).sha1($salt));
+					$userinfo['psd'] = sha1(sha1($userinfo['psd']).sha1($salt));
 				}
 			return DataBase::INSERT($link,$table,$userinfo,$timename);
 		}
@@ -460,20 +458,20 @@
 		 */
 		
 		public static function verify($link,$table,$userinfo,$mode=sha1){
-			$salt= DataBase::SELECT($link,$table,'salt',[user=>$userinfo['user']]);
-			$arr=json_decode($salt,TRUE);
+			$salt = DataBase::SELECT($link,$table,'salt',[user => $userinfo['user']]);
+			$arr = json_decode($salt,TRUE);
 			foreach ($arr as $key => $value) {
-				$salt=$value['salt'];
+				$salt = $value['salt'];
 			}
-			if ($mode=='md5') {
-				$psd=md5(md5($userinfo['psd']).md5($salt));
+			if ($mode == 'md5') {
+				$psd = md5(md5($userinfo['psd']).md5($salt));
 			}else{
-				$psd=sha1(sha1($userinfo['psd']).sha1($salt));
+				$psd = sha1(sha1($userinfo['psd']).sha1($salt));
 			}
-			$password=DataBase::SELECT($link,$table,'psd',[user=>$userinfo['user']]);
-			$arr1=json_decode($password,true);
+			$password = DataBase::SELECT($link,$table,'psd',[user => $userinfo['user']]);
+			$arr1 = json_decode($password,true);
 			foreach ($arr1 as $key => $value) {
-				if($psd===$value['psd']){//防止hash漏洞
+				if($psd === $value['psd']){//防止hash漏洞
 					return "Verification passed";
 				}else{
 					return "Verification failed";
@@ -500,17 +498,17 @@
 		 */
 
 		public static function resetPsd($link,$table,$userinfo,$newpsd,$mode=sha1){
-			$psd_salt=DataBase::SELECT($link,$table,'salt',$userinfo);
-			$psd_salt=json_decode($psd_salt,true);
+			$psd_salt = DataBase::SELECT($link,$table,'salt',$userinfo);
+			$psd_salt = json_decode($psd_salt,true);
 			foreach ($psd_salt as $key => $value) {
-				$salt= $value['salt'];
+				$salt = $value['salt'];
 			}
-			if ($mode=='md5') {
-				$con_newpsd=md5(md5($newpsd['psd']).md5($salt));
+			if ($mode == 'md5') {
+				$con_newpsd = md5(md5($newpsd['psd']).md5($salt));
 			}else{
-				$con_newpsd=sha1(sha1($newpsd['psd']).sha1($salt));
+				$con_newpsd = sha1(sha1($newpsd['psd']).sha1($salt));
 			}
-			$newpsd['psd']=$con_newpsd;
+			$newpsd['psd'] = $con_newpsd;
 			return DataBase::UPDATE($link,$table,$newpsd,$userinfo);
 		}
 
@@ -534,13 +532,13 @@
 			if ($conn->connect_error) {
 			die("连接失败: " . $conn->connect_error);
 			}
-			$arr=[];
+			$arr = [];
 			foreach ($columns as $key => $value) {
-				$str=$key.' '.$value;
+				$str = $key.' '.$value;
 				array_push($arr,$str);
 			}
-			$str='id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'.implode(' NOT NULL,',$arr);
-			$sql="CREATE TABLE {$tablename} ($str)";
+			$str = 'id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'.implode(' NOT NULL,',$arr);
+			$sql = "CREATE TABLE {$tablename} ($str)";
 			if ($conn->query($sql) === TRUE) {
 			return "create-success";
 			} else {
@@ -561,22 +559,22 @@
 		 */
 
 		public static function Tostr($str){
-			$str=str_replace(';','%alt',$str);//处理;
-			$str=str_replace('@','%clt',$str);//处理@
-			$str=str_replace('|','%dlt',$str);//处理|
-			$str=str_replace('#','%elt',$str);//处理#
-			$str=str_replace('$','%flt',$str);//处理$
-			$str=str_replace('%','%glt',$str);//处理%
-			$str=str_replace('&','%hlt',$str);//处理&
-			$str=str_replace('[','%ilt',$str);//处理[
-			$str=str_replace(']','%jlt',$str);//处理]
-			$str=str_replace('<','%klt',$str);//处理<
-			$str=str_replace('>','%llt',$str);//处理>
-			$str=str_replace('(','%mlt',$str);//处理(
-			$str=str_replace(')','%nlt',$str);//处理)
-			$str=str_replace('!','%olt',$str);//处理!
-			$str=str_replace('+','%2b',$str);//处理+
-			$str=str_replace('--','%ddlt',$str);//处理--
+			$str = str_replace(';','%alt',$str);//处理;
+			$str = str_replace('@','%clt',$str);//处理@
+			$str = str_replace('|','%dlt',$str);//处理|
+			$str = str_replace('#','%elt',$str);//处理#
+			$str = str_replace('$','%flt',$str);//处理$
+			$str = str_replace('%','%glt',$str);//处理%
+			$str = str_replace('&','%hlt',$str);//处理&
+			$str = str_replace('[','%ilt',$str);//处理[
+			$str = str_replace(']','%jlt',$str);//处理]
+			$str = str_replace('<','%klt',$str);//处理<
+			$str = str_replace('>','%llt',$str);//处理>
+			$str = str_replace('(','%mlt',$str);//处理(
+			$str = str_replace(')','%nlt',$str);//处理)
+			$str = str_replace('!','%olt',$str);//处理!
+			$str = str_replace('+','%2b',$str);//处理+
+			$str = str_replace('--','%ddlt',$str);//处理--
 			return $str;
 		}
 
@@ -599,25 +597,20 @@
 			$arr=json_decode($str,true);
 			foreach ($arr as $key => $value) {
 				foreach ($value as $k => $val) {
-					if(strpos($columns,$k)||strpos($columns,$k)===0){
+					if(strpos($columns,$k) || strpos($columns,$k) === 0){
 						$value[$k]=base64_decode($val);
 					}
 				}
-				$arr[$key]=$value;
+				$arr[$key] = $value;
 			}
-			$data=json_encode($arr,true);
+			$data = json_encode($arr,true);
 			return $data;
 		}
 
 
 		/*
 		 *	待添加功能 2018-03-16 20:58
-		 */
-		
-
-
-		
-
+		 */	
 	}
 	
  ?>
